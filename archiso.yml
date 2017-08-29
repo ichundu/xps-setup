@@ -5,35 +5,41 @@
   connection: local
 
   tasks:
-    - name: Partition the disks
+    - name: New GPT partition table
       parted:
         device: /dev/sda
-        name: "{{ item.name | default(omit) }}"
         label: gpt
-        number: "{{ item.number }}"
-        part_type: "{{ item.part_type }}"
-        part_start: "{{ item.part_start }}"
-        part_end: "{{ item.part_end }}"
-        unit: "{{ item.unit }}"
-        flags: "{{ item.flags | default(omit) }}"
         state: present
-      with_items:
-        - name: boot
-          number: 1
-          type: primary
-          part_start: "0%"
-          parte_end: "256MiB"
-          unit: "MiB"
-          flags: "boot, esp"
-        - name: root
-          number: 2
-          type: primary
-          part_start: "257MiB"
-          parte_end: "122112MiB"
-          unit: "MiB"
-        - name: swap
-          number: 3
-          type: primary
-          part_start: "122113MiB"
-          parte_end: "100%"
-          unit: "MiB"
+
+    - name: Add boot partition
+      parted:
+        device: /dev/sda
+        name: boot
+        number: 1
+        part_type: primary
+        part_start: "0%"
+        part_end: "256MiB"
+        unit: "MiB"
+        flags: [ boot, esp ]
+        state: present
+
+    - name: Add root partition
+      parted:
+        device: /dev/sda
+        name: boot
+        number: 2
+        part_type: primary
+        part_start: "257MiB"
+        part_end: "113664MiB"
+        unit: "MiB"
+        state: present
+
+    - name: Add swap partition
+      parted:
+        device: /dev/sda
+        name: boot
+        number: 3
+        part_type: primary
+        part_start: "113665MiB"
+        part_end: "100%"
+        unit: "MiB"
